@@ -28,10 +28,10 @@ public class MainFrame extends JFrame {
 
     private void initData() {
         group = new Group("Goa Trip 2025");
-        User u1 = new User("Samiksha");
-        User u2 = new User("Amit");
-        User u3 = new User("Pooja");
-
+        User u1 = new User("Ishika");
+        User u2 = new User("Tanyaa");
+        User u3 = new User("Aarohi");
+        
         group.addMember(u1);
         group.addMember(u2);
         group.addMember(u3);
@@ -99,20 +99,39 @@ public class MainFrame extends JFrame {
     }
 
     private void showSettlement() {
-        double avg = group.getExpenses().stream().mapToDouble(Expense::getAmount).sum()
-                / group.getMembers().size();
+        double total = group.getExpenses().stream()
+                .mapToDouble(Expense::getAmount)
+                .sum();
 
-        StringBuilder sb = new StringBuilder("Simple Settlement (Total/Persons): " + avg + "\n\n");
+        double sharePerPerson = total / group.getMembers().size();
+
+        StringBuilder sb = new StringBuilder(
+                "Total Expense: ₹" + total +
+                "\nEach person should pay: ₹" + sharePerPerson + "\n\n"
+        );
+
         for (User u : group.getMembers()) {
             double paid = group.getExpenses().stream()
                     .filter(e -> e.getPaidBy().equals(u))
                     .mapToDouble(Expense::getAmount)
                     .sum();
-            double diff = paid - avg;
-            sb.append(u.getName())
-              .append(" : ")
-              .append(String.format("%.2f", diff))
-              .append(diff >= 0 ? " (should receive)\n" : " (should pay)\n");
+
+            double balance = paid - sharePerPerson;
+
+            if (balance > 0) {
+                sb.append(u.getName())
+                  .append(" should RECEIVE ₹")
+                  .append(String.format("%.2f", balance))
+                  .append("\n");
+            } else if (balance < 0) {
+                sb.append(u.getName())
+                  .append(" should PAY ₹")
+                  .append(String.format("%.2f", Math.abs(balance)))
+                  .append("\n");
+            } else {
+                sb.append(u.getName())
+                  .append(" is SETTLED\n");
+            }
         }
 
         JOptionPane.showMessageDialog(this, sb.toString());
